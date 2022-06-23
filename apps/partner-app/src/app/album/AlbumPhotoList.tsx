@@ -1,9 +1,10 @@
 import { connect } from "react-redux";
-import { useEffect, useLayoutEffect } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { Album } from "../model/Album";
-import { fetchAlbum, fetchAlbumPhoto, fetchAlbumPhotoWithAlbums } from "../store/album/action";
 import { AppState } from "../store/app.state";
+import { Album } from "../model/Album";
+import { fetchAlbumPhoto, fetchAlbumPhotoWithAlbums } from "../store/album/action";
+
 
 const queryString = (key: string) => {
     let location = useLocation();
@@ -11,7 +12,7 @@ const queryString = (key: string) => {
     return x.get(key);
 }
 
-interface Props {    
+interface Props {
     doFetchAlbumPhotoWithAlbums(albumId: number): void,
     doFetchAlbumPhoto(albumId: number): void,
     loading: boolean,
@@ -26,13 +27,13 @@ const AlbumPhotoList: React.FunctionComponent<Props> = (props: Props) => {
     const qs1 = queryString("qs1");
     useEffect(() => {
         console.log(qs1);
-        if(props.albums && props.albums.length>0){
+        if (props.albums && props.albums.length > 0) {
             let album = props.albums?.find(x => x.albumId == albumId)!;
             if (album) {
                 if (!(album.photos && album.photos.length > 0))
                     props.doFetchAlbumPhoto(albumId);
             }
-        }else{
+        } else {
             props.doFetchAlbumPhotoWithAlbums(albumId);
             // props.doFetchAlbum();   
             // const t = setTimeout(() => {
