@@ -1,5 +1,5 @@
 import { connect, useDispatch, useSelector } from "react-redux";
-import React, { useEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import { fetchAlbum } from "../store/album/action";
 import { Album } from "../model/Album";
 import AppStore from "../store/app.store";
@@ -31,9 +31,10 @@ const AlbumList: React.FunctionComponent<Props> = (props:Props) => {
     // const error = useSelector<AlbumState, string | null>(state => state.error);
     // const albums = useSelector<AlbumState, Album[] | null>(state => state.albums);
     
-    useEffect(() => {
-        props.doFetchAlbum();
-    }, []);
+    useLayoutEffect(() => {
+        if(!(props.albums && props.albums.length>0))
+            props.doFetchAlbum();
+    }, [props.doFetchAlbum]);
 
     return (
         <div>

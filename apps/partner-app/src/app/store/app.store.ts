@@ -16,5 +16,9 @@ const logger = createLogger({});
 // export default AppStore;
 
 export default function configureStore(): Store<AppState, AnyAction> {
-  return createStore(rootReducer, undefined, composeWithDevTools(applyMiddleware(thunk,)));
+  // const store = createStore(rootReducer, undefined, composeWithDevTools(applyMiddleware(thunk)));
+  // store.subscribe(()=> {
+  //   console.log(store.getState());
+  // });
+  return createStore(rootReducer, undefined, composeWithDevTools(applyMiddleware(thunk,logger)));;
 }

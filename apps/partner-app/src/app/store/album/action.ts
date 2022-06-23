@@ -2,6 +2,7 @@ import axios from "axios";
 import { ALBUM_LIST_URL, ALBUM_PHOTO_LIST_URL } from "../../AppConstants"
 import { ALBUM_REQUEST, ALBUM_FAIL, ALBUM_SUCESS, ALBUM_PHOTO_REQUEST, ALBUM_PHOTO_FAIL, ALBUM_PHOTO_SUCESS } from "./actionType"
 import { Album, Photo } from "../../model/Album";
+import { AppState } from "../app.state";
 
 export const AlbumRequestAction = () => {
     return {
@@ -27,8 +28,8 @@ export const AlbumSucessAction = (data: Album[] | null) => {
 export const AlbumPhotoRequestAction = (albumId: number) => {
     return {
         type: ALBUM_PHOTO_REQUEST,
-        albumId:albumId,
-        payload:null
+        albumId: albumId,
+        payload: null
     }
 }
 
@@ -48,8 +49,6 @@ export const AlbumPhotoSucessAction = (albumId: number, data: Photo[] | null) =>
     }
 }
 
-
-
 export const fetchAlbum = () => {
     return (dispatch: Function): void => {
         dispatch(AlbumRequestAction());
@@ -63,7 +62,7 @@ export const fetchAlbum = () => {
                         photos: undefined
                     } as Album;
                 });
-                dispatch(AlbumSucessAction(el));
+                dispatch(AlbumSucessAction(el));                
             })
             .catch(function (error) {
                 console.log(error);
@@ -73,7 +72,8 @@ export const fetchAlbum = () => {
 }
 
 export const fetchAlbumPhoto = (albumID: number) => {
-    return (dispatch: Function): void => {
+    return (dispatch: Function, getState: Function): void => {
+        const t: AppState = getState();        
         dispatch(AlbumPhotoRequestAction(albumID));
         let url = ALBUM_PHOTO_LIST_URL.replace("{albumId}", albumID.toString());
         console.log(url);
@@ -81,7 +81,7 @@ export const fetchAlbumPhoto = (albumID: number) => {
             .then(function (response) {
                 let el = response.data.map((x) => {
                     return {
-                        albumId:x.albumId,
+                        albumId: x.albumId,
                         photoId: x.id,
                         photoTitle: x.title,
                         photoUrl: x.url,
@@ -96,3 +96,31 @@ export const fetchAlbumPhoto = (albumID: number) => {
             });
     }
 }
+
+export const fetchAlbumPhotoWithAlbums = (albumID: number) => {
+    return (dispatch: Function, getState: Function): void => {
+        const t: AppState = getState();        
+        console.log(t.album);
+        dispatch(AlbumRequestAction());
+        axios.get<{ userId: any; id: any; title: any; }[]>(ALBUM_LIST_URL)
+            .then(function (response) {
+                let el = response.data.map((x) => {
+                    return {
+                        userId: x.userId,
+                        albumId: x.id,
+                        albumTitle: x.title,
+                        photos: undefined
+                    } as Album;
+                });
+                dispatch(AlbumSucessAction(el));  
+                dispatch(fetchAlbumPhoto(albumID));              
+            })
+            .catch(function (error) {
+                console.log(error);
+                dispatch(AlbumFailAction("Unable to fetch data"));
+            });
+
+        
+    }
+}
+

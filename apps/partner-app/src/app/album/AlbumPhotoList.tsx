@@ -1,8 +1,8 @@
 import { connect } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { Album } from "../model/Album";
-import { fetchAlbumPhoto } from "../store/album/action";
+import { fetchAlbum, fetchAlbumPhoto, fetchAlbumPhotoWithAlbums } from "../store/album/action";
 import { AppState } from "../store/app.state";
 
 const queryString = (key: string) => {
@@ -11,29 +11,36 @@ const queryString = (key: string) => {
     return x.get(key);
 }
 
-interface Props {
+interface Props {    
+    doFetchAlbumPhotoWithAlbums(albumId: number): void,
     doFetchAlbumPhoto(albumId: number): void,
     loading: boolean,
     error: string | null,
     albums: Album[] | null
 }
 
-
-
 const AlbumPhotoList: React.FunctionComponent<Props> = (props: Props) => {
     let navigate = useNavigate();
     const params = useParams();
     const albumId = parseInt(params["albumId"]!);
-
+    const qs1 = queryString("qs1");
     useEffect(() => {
-        console.log(albumId);
-        let album = props.albums?.find(x => x.albumId == albumId)!;
-        if (album) {
-            props.doFetchAlbumPhoto(albumId);
-        } else {
-
+        console.log(qs1);
+        if(props.albums && props.albums.length>0){
+            let album = props.albums?.find(x => x.albumId == albumId)!;
+            if (album) {
+                if (!(album.photos && album.photos.length > 0))
+                    props.doFetchAlbumPhoto(albumId);
+            }
+        }else{
+            props.doFetchAlbumPhotoWithAlbums(albumId);
+            // props.doFetchAlbum();   
+            // const t = setTimeout(() => {
+            //     props.doFetchAlbumPhoto(albumId);
+            // }, 500); 
         }
-    }, [location]);
+
+    }, [props.doFetchAlbumPhoto]);
 
     let album = props.albums?.find(x => x.albumId == albumId)!;
     if (props.loading) {
@@ -46,7 +53,7 @@ const AlbumPhotoList: React.FunctionComponent<Props> = (props: Props) => {
                 {
                     album?.photos?.map((i) => {
                         return (
-                            <a target="_blank" href={i.photoUrl} title={i.photoTitle}>
+                            <a key={i.photoId} target="_blank" href={i.photoUrl} title={i.photoTitle}>
                                 <img src={i.photoThumbnailUrl} />
                             </a>
                         )
@@ -67,6 +74,7 @@ const mapStateToProps = (state: AppState) => {
 }
 const mapDispatchToProps = (dispatch: Function) => {
     return {
+        doFetchAlbumPhotoWithAlbums: (albumId: number) => dispatch(fetchAlbumPhotoWithAlbums(albumId)),
         doFetchAlbumPhoto: (albumId: number) => dispatch(fetchAlbumPhoto(albumId))
     }
 }
